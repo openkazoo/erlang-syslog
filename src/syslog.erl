@@ -77,19 +77,19 @@
 %%% API %%%
 
 -spec start() ->
-    {ok, pid()} | ignore | {error, any()}.
+                   {ok, pid()} | ignore | {error, any()}.
 
 start() ->
     gen_server:start({local, ?MODULE}, ?MODULE, [], []).
 
 -spec start_link() ->
-    {ok, pid()} | ignore | {error, any()}.
+                        {ok, pid()} | ignore | {error, any()}.
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 -spec stop() ->
-    ok.
+                  ok.
 
 stop() ->
     gen_server:cast(?MODULE, stop).
@@ -97,8 +97,8 @@ stop() ->
 -spec open(Ident :: string(),
            Logopt :: list(openlog_opt()),
            Facility :: facility()) ->
-    {ok, port()} |
-    {error, any()}.
+                  {ok, port()} |
+                  {error, any()}.
 
 open(Ident, Logopt, Facility) ->
     Log = erlang:open_port({spawn, ?DRV_NAME}, [binary]),
@@ -116,7 +116,7 @@ open(Ident, Logopt, Facility) ->
 -spec log(Log :: port(),
           Priority :: priority(),
           Message :: iolist()) ->
-    ok.
+                 ok.
 
 log(_Log, _Priority, []) ->
     ok;
@@ -124,27 +124,27 @@ log(Log, Priority, Message) ->
     NumPri = priority(Priority),
     %% encode the priority value as a 4-byte integer in network order, and
     %% add a 0 byte to the end of the command data to act as a NUL character
-    true = erlang:port_command(Log, [<<NumPri:32/big>>, Message, <<0:8>>]),
+    true = erlang:port_command(Log, [<<NumPri:32/big>>, unicode:characters_to_binary(Message), <<0:8>>]),
     ok.
 
 -spec log(Log :: port(),
           Priority :: priority(),
           FormatStr :: string(),
           FormatArgs :: list()) ->
-    ok.
+                 ok.
 
 log(Log, Priority, FormatStr, FormatArgs) ->
     log(Log, Priority, io_lib:format(FormatStr, FormatArgs)).
 
 -spec close(Log :: port()) ->
-    ok.
+                   ok.
 
 close(Log) ->
     true = erlang:port_close(Log),
     ok.
 
 -spec priority(N :: priority() | non_neg_integer()) ->
-    non_neg_integer().
+                      non_neg_integer().
 
 priority(emerg)     -> 0;
 priority(alert)     -> 1;
@@ -158,7 +158,7 @@ priority(N) when is_integer(N), N >= 0 -> N;
 priority(_) -> erlang:error(badarg).
 
 -spec facility(N :: facility() | non_neg_integer()) ->
-    non_neg_integer().
+                      non_neg_integer().
 
 facility(kern)      -> 0;
 facility(user)      -> 8;
@@ -188,7 +188,7 @@ facility(N) when is_integer(N), N >= 0 -> N;
 facility(_) -> erlang:error(badarg).
 
 -spec openlog_opt(N :: openlog_opt() | pos_integer()) ->
-    pos_integer().
+                         pos_integer().
 
 openlog_opt(pid)    -> 1;
 openlog_opt(cons)   -> 2;
@@ -200,7 +200,7 @@ openlog_opt(_) -> erlang:error(badarg).
 
 -spec openlog_opts(N :: list(openlog_opt() | pos_integer()) |
                         openlog_opt() | pos_integer()) ->
-    pos_integer().
+                          pos_integer().
 
 openlog_opts([Queue]) -> openlog_opt(Queue);
 openlog_opts([Tail|Queue]) ->
@@ -209,7 +209,7 @@ openlog_opts([]) -> 0;
 openlog_opts(N) -> openlog_opt(N).
 
 -spec load() ->
-    ok | {error, string()}.
+                  ok | {error, string()}.
 
 load() ->
     PrivDir = case code:priv_dir(?MODULE) of
@@ -226,13 +226,13 @@ load() ->
         {error, LoadError} ->
             LoadErrorStr = erl_ddll:format_error(LoadError),
             ErrStr = lists:flatten(
-                io_lib:format("could not load driver ~s: ~p",
-                              [?DRV_NAME, LoadErrorStr])),
+                       io_lib:format("could not load driver ~s: ~p",
+                                     [?DRV_NAME, LoadErrorStr])),
             {error, ErrStr}
     end.
 
 -spec unload() ->
-    ok | {error, string()}.
+                    ok | {error, string()}.
 
 unload() ->
     case erl_ddll:unload_driver(?DRV_NAME) of
@@ -240,8 +240,8 @@ unload() ->
         {error, UnloadError} ->
             UnloadErrorStr = erl_ddll:format_error(UnloadError),
             ErrStr = lists:flatten(
-                io_lib:format("could not unload driver ~s: ~p",
-                              [?DRV_NAME, UnloadErrorStr])),
+                       io_lib:format("could not unload driver ~s: ~p",
+                                     [?DRV_NAME, UnloadErrorStr])),
             {error, ErrStr}
     end.
 
