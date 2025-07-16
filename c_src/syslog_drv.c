@@ -25,6 +25,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <syslog.h>
 #include <stdarg.h>
 #include <string.h>
+#include <netinet/in.h>
 
 #include <ei.h>
 #include <erl_driver.h>
